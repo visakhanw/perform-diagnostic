@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PERFORM — Manufacturing Performance &amp; Sustainability Diagnostic</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy-950:#1a2431;
+  --navy-900:#20304a;
+  --navy-800:#26364f;
+  --navy-700:#31435e;
+  --line:#e4e0d6;
+  --line-soft:#ece8de;
+  --paper:#f6f4ee;
+  --panel:#ffffff;
+  --panel-soft:#f7f5ef;
+  --ink:#212b38;
+  --ink-dim:#5c6a78;
+  --ink-faint:#94a0ab;
+  --gold:#bd8a45;
+  --gold-dim:#f1e6d2;
+  --blue:#2a4d86;
+  --blue-dim:#e6ecf5;
+  --amber:#c9832f;
+  --red:#c0483f;
+  --green:#3f8f63;
+  --orange:#c9832f;
+  --font-display:'Plus Jakarta Sans',sans-serif;
+  --font-body:'Plus Jakarta Sans',sans-serif;
+  --font-mono:'IBM Plex Mono',monospace;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:var(--font-body);
+  font-size:15px;
+  line-height:1.6;
+}
+a{color:var(--blue);}
+::selection{background:var(--gold);color:#fff;}
+.app{max-width:1180px;margin:0 auto;padding:0 28px 100px;}
+h1,h2,h3,h4{font-family:var(--font-display);font-weight:700;margin:0;color:var(--navy-950);letter-spacing:-.01em;}
+.mono{font-family:var(--font-mono);}
+.eyebrow{
+  font-family:var(--font-mono);
+  font-size:11.5px;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:var(--gold);
+  display:flex;align-items:center;gap:10px;
+  font-weight:600;
+}
+.eyebrow::before{content:"";width:18px;height:1px;background:var(--gold);display:inline-block;}
+
+/* ===== topbar ===== */
+.topbar{
+  position:sticky;top:0;z-index:40;
+  background:rgba(246,244,238,.92);
+  backdrop-filter:blur(6px);
+  border-bottom:1px solid var(--line);
+}
+.topbar-inner{max-width:1180px;margin:0 auto;padding:18px 28px;display:flex;align-items:center;justify-content:space-between;}
+.brand{display:flex;align-items:center;gap:10px;cursor:pointer;}
+.brand-mark{
+  width:32px;height:32px;background:var(--navy-950);border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-display);font-weight:700;font-size:14px;color:var(--gold);
+  position:relative;
+}
+.brand-name{font-family:var(--font-display);font-weight:700;font-size:17px;letter-spacing:-.01em;color:var(--navy-950);}
+.brand-sub{font-family:var(--font-mono);font-size:10.5px;color:var(--ink-faint);letter-spacing:.06em;}
+.topbar-tag{font-family:var(--font-mono);font-size:11px;color:var(--ink-dim);}
+
+/* ===== progress rail ===== */
+.rail{display:flex;align-items:center;gap:0;margin:26px 0 34px;overflow-x:auto;padding-bottom:6px;}
+.rail-step{display:flex;align-items:center;flex-shrink:0;}
+.rail-dot{
+  width:30px;height:30px;border-radius:50%;
+  border:1px solid var(--line);background:var(--panel);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-mono);font-size:11px;color:var(--ink-faint);
+  cursor:pointer;flex-shrink:0;transition:border-color .15s,color .15s;
+}
+.rail-dot:hover{border-color:var(--ink-dim);}
+.rail-dot.done{border-color:var(--gold);color:var(--gold);background:var(--gold-dim);}
+.rail-dot.active{border-color:var(--blue);color:var(--blue);background:var(--blue-dim);}
+.rail-dot.locked{cursor:not-allowed;}
+.rail-line{width:26px;height:1px;background:var(--line);flex-shrink:0;}
+.rail-line.done{background:var(--gold);}
+.rail-label{display:none;}
+
+/* ===== cards / panels ===== */
+.panel{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:28px 30px;
+  margin-bottom:20px;
+  box-shadow:0 1px 2px rgba(26,36,49,.04), 0 8px 24px rgba(26,36,49,.03);
+}
+.panel-tight{padding:18px 20px;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+@media(max-width:720px){.grid2,.grid3{grid-template-columns:1fr;}}
+
+/* ===== forms ===== */
+.field{margin-bottom:16px;}
+.field label{
+  display:block;font-family:var(--font-mono);font-size:11px;letter-spacing:.04em;
+  color:var(--ink-dim);margin-bottom:6px;text-transform:uppercase;
+}
+.field .hint{font-family:var(--font-body);font-size:12px;color:var(--ink-faint);margin-top:5px;text-transform:none;letter-spacing:0;}
+input[type=text],input[type=number],select{
+  width:100%;background:var(--panel-soft);border:1px solid var(--line);color:var(--ink);
+  padding:10px 12px;border-radius:8px;font-family:var(--font-mono);font-size:14px;
+}
+input:focus,select:focus{outline:none;border-color:var(--blue);background:#fff;}
+select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--ink-dim) 50%),linear-gradient(135deg,var(--ink-dim) 50%,transparent 50%);background-position:calc(100% - 16px) center,calc(100% - 11px) center;background-size:5px 5px,5px 5px;background-repeat:no-repeat;}
+.radio-row{display:flex;gap:10px;}
+.radio-opt{flex:1;border:1px solid var(--line);border-radius:8px;padding:9px 10px;text-align:center;cursor:pointer;font-family:var(--font-mono);font-size:12.5px;color:var(--ink-dim);background:var(--panel-soft);}
+.radio-opt.sel{border-color:var(--blue);color:var(--blue);background:var(--blue-dim);}
+
+/* ===== buttons ===== */
+.btn{
+  font-family:var(--font-mono);font-size:12.5px;letter-spacing:.03em;
+  padding:11px 22px;border-radius:999px;border:1px solid var(--line);
+  background:var(--panel);color:var(--ink);cursor:pointer;
+  display:inline-flex;align-items:center;gap:8px;text-transform:uppercase;
+  transition:border-color .15s,background .15s,color .15s;
+}
+.btn:hover{border-color:var(--ink-dim);}
+.btn-primary{background:var(--navy-950);border-color:var(--navy-950);color:#fff;font-weight:600;}
+.btn-primary:hover{background:var(--blue);border-color:var(--blue);}
+.btn-ghost{border-color:transparent;color:var(--ink-dim);background:transparent;}
+.btn-ghost:hover{color:var(--ink);}
+.btn-sample{border-color:var(--gold);color:var(--gold);background:#fff;}
+.btn-sample:hover{background:var(--gold-dim);}
+.actions{display:flex;justify-content:space-between;align-items:center;margin-top:26px;}
+
+/* ===== status chips ===== */
+.chip{display:inline-flex;align-items:center;gap:6px;font-family:var(--font-mono);font-size:11px;padding:4px 10px;border-radius:999px;text-transform:uppercase;letter-spacing:.03em;}
+.chip-dot{width:7px;height:7px;border-radius:50%;}
+.chip-red{background:rgba(192,72,63,.1);color:var(--red);}
+.chip-red .chip-dot{background:var(--red);}
+.chip-orange{background:rgba(201,131,47,.1);color:var(--amber);}
+.chip-orange .chip-dot{background:var(--amber);}
+.chip-green{background:rgba(63,143,99,.1);color:var(--green);}
+.chip-green .chip-dot{background:var(--green);}
+
+/* ===== gauges ===== */
+.gauge-row{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;}
+@media(max-width:900px){.gauge-row{grid-template-columns:repeat(2,1fr);}}
+.gauge-card{background:var(--panel-soft);border:1px solid var(--line);border-radius:12px;padding:16px 12px 14px;text-align:center;}
+.gauge-name{font-family:var(--font-mono);font-size:10px;text-transform:uppercase;color:var(--ink-dim);letter-spacing:.03em;min-height:26px;}
+.gauge-score{font-family:var(--font-display);font-size:22px;font-weight:700;margin-top:4px;color:var(--navy-950);}
+.gauge-status{font-family:var(--font-mono);font-size:10px;text-transform:uppercase;letter-spacing:.05em;margin-top:2px;}
+
+/* ===== findings ===== */
+.finding{display:flex;gap:16px;border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin-bottom:12px;background:var(--panel-soft);}
+.finding-badge{flex-shrink:0;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:11px;}
+.finding-body h4{font-size:15px;margin-bottom:4px;}
+.finding-evidence{font-family:var(--font-mono);font-size:12px;color:var(--ink-dim);margin-top:6px;}
+.finding-evidence li{margin-bottom:2px;}
+
+/* ===== flow diagram (hypothesis chain) ===== */
+.chain{display:flex;flex-direction:column;align-items:center;font-family:var(--font-mono);font-size:12.5px;margin:18px 0;}
+.chain-node{border:1px solid var(--line);background:var(--panel-soft);padding:8px 16px;border-radius:8px;color:var(--ink);}
+.chain-arrow{color:var(--ink-faint);font-size:14px;line-height:1;margin:2px 0;}
+
+/* ===== tables ===== */
+table.dt{width:100%;border-collapse:collapse;font-family:var(--font-mono);font-size:13px;}
+table.dt th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-dim);border-bottom:1px solid var(--line);padding:8px 10px;}
+table.dt td{border-bottom:1px solid var(--line-soft);padding:10px;color:var(--ink);}
+table.dt tr:last-child td{border-bottom:none;}
+
+/* ===== roadmap ===== */
+.roadmap{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;position:relative;}
+@media(max-width:800px){.roadmap{grid-template-columns:1fr;}}
+.roadmap-col{border:1px solid var(--line);border-radius:12px;background:var(--panel-soft);padding:18px 18px 20px;}
+.roadmap-col h4{font-size:12px;font-family:var(--font-mono);color:var(--gold);text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px;}
+.roadmap-col ul{margin:0;padding-left:18px;font-size:13.5px;}
+.roadmap-col li{margin-bottom:8px;color:var(--ink);}
+
+/* ===== hero / landing ===== */
+.hero{padding:64px 0 40px;}
+.hero h1{font-size:46px;line-height:1.08;max-width:760px;letter-spacing:-.02em;}
+.hero p.lede{font-size:16.5px;color:var(--ink-dim);max-width:560px;margin-top:18px;}
+.hero-actions{display:flex;gap:12px;margin-top:30px;flex-wrap:wrap;}
+.service-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:56px;}
+@media(max-width:800px){.service-strip{grid-template-columns:1fr;}}
+.service-card{border:1px solid var(--line);border-radius:14px;padding:22px;background:var(--panel);box-shadow:0 1px 2px rgba(26,36,49,.04);}
+.service-card .n{font-family:var(--font-mono);font-size:11px;color:var(--gold);}
+.service-card h3{font-size:16px;margin-top:8px;}
+.service-card p{font-size:13px;color:var(--ink-dim);margin-top:8px;}
+
+.section-head{margin-bottom:22px;}
+.section-head .step-tag{font-family:var(--font-mono);font-size:11px;color:var(--ink-faint);}
+.section-head h2{font-size:25px;margin-top:6px;}
+.section-head p{color:var(--ink-dim);font-size:14px;margin-top:8px;max-width:640px;}
+
+.foot-note{font-family:var(--font-mono);font-size:11px;color:var(--ink-faint);margin-top:30px;border-top:1px solid var(--line);padding-top:14px;}
+
+.badge-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;}
+
+/* print */
+@media print{
+  body{background:#fff;color:#111;}
+  .topbar,.rail,.actions,.btn,.no-print{display:none !important;}
+  .panel{border:1px solid #ccc;background:#fff;box-shadow:none;}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="brand" onclick="goView('landing')">
+      <div class="brand-mark">P</div>
+      <div>
+        <div class="brand-name">PERFORM</div>
+        <div class="brand-sub">DIAGNOSTIC SIMULATION</div>
+      </div>
+    </div>
+    <div class="topbar-tag" id="topbar-tag">manufacturing performance &amp; sustainability diagnostic</div>
+  </div>
+</div>
+
+<div class="app" id="app"></div>
+
+<script>
+/* ============================================================
+   CONFIG
+   ============================================================ */
+const STEPS = [
+  {id:'profile', label:'Company'},
+  {id:'operations', label:'Operations'},
+  {id:'financial', label:'Financial'},
+  {id:'environmental', label:'Environmental'},
+  {id:'sustainability', label:'Data maturity'},
+  {id:'diagnosis', label:'Diagnosis'},
+  {id:'insights', label:'Findings'},
+  {id:'investigation', label:'Investigation'},
+  {id:'recommendations', label:'Options'},
+  {id:'roadmap', label:'Roadmap'},
+  {id:'report', label:'Report'},
+];
+
+const RECOVERY_BY_TYPE = {
+  metal:{label:'Metal', rate:0.85},
+  plastic:{label:'Plastic', rate:0.70},
+  wood:{label:'Wood', rate:0.60},
+  chemical:{label:'Chemical / regulated', rate:0.20},
+  mixed:{label:'Mixed / other', rate:0.40},
+};
+
+const SAMPLE = {
+  company:{
+    name:'Anatolia Home Manufacturing A.Ş.',
+    industry:'Home & furniture manufacturing',
+    revenue:'620000000',
+    employees:'340',
+    prodVolume:'100000',
+    exportMarkets:'Germany, France, United Kingdom',
+  },
+  operations:{
+    downtime:'18', prevDowntime:'13',
+    defectRate:'6.4', prevDefectRate:'3.1',
+    leadTime:'21', onTimeDelivery:'78', capacityUtilization:'71',
+  },
+  financial:{
+    rawMaterialCost:'38000000', energyCost:'9200000', laborCost:'21000000',
+    logisticsCost:'6500000', wasteTreatmentCost:'1800000',
+  },
+  environmental:{
+    electricity:'2400000', prevElectricity:'2100000', prevProdVolume:'118000',
+    naturalGas:'180000', water:'62000', ghgEmissions:'1450',
+    wasteTotal:'9000', wasteRecycled:'3200', wasteType:'wood',
+    materialConsumed:'100000', prevWasteRate:'4',
+  },
+  sustainability:{
+    carbonFootprintAvailable:'no', waterFootprintAvailable:'no',
+    kpisTracked:'no', sustainabilityReport:'no',
+    dataFrequency:'ad_hoc',
+  },
+};
+
+function emptyState(){
+  return {
+    view:'landing',
+    reached:['profile'],
+    company:{name:'',industry:'',revenue:'',employees:'',prodVolume:'',exportMarkets:''},
+    operations:{downtime:'',prevDowntime:'',defectRate:'',prevDefectRate:'',leadTime:'',onTimeDelivery:'',capacityUtilization:''},
+    financial:{rawMaterialCost:'',energyCost:'',laborCost:'',logisticsCost:'',wasteTreatmentCost:''},
+    environmental:{electricity:'',prevElectricity:'',prevProdVolume:'',naturalGas:'',water:'',ghgEmissions:'',wasteTotal:'',wasteRecycled:'',wasteType:'wood',materialConsumed:'',prevWasteRate:''},
+    sustainability:{carbonFootprintAvailable:'no',waterFootprintAvailable:'no',kpisTracked:'no',sustainabilityReport:'no',dataFrequency:'ad_hoc'},
+  };
+}
+
+let state = emptyState();
+
+/* ============================================================
+   HELPERS
+   ============================================================ */
+function num(v){ const n = parseFloat(v); return isNaN(n) ? 0 : n; }
+function fmt(v, d=1){ return num(v).toLocaleString(undefined,{maximumFractionDigits:d}); }
+function fmtCur(v){ return '₺' + Math.round(num(v)).toLocaleString(); }
+function statusOf(score){
+  if(score < 40) return {label:'HIGH RISK', color:'red'};
+  if(score < 70) return {label:'MODERATE', color:'orange'};
+  return {label:'ON TRACK', color:'green'};
+}
+function clamp(v,min,max){ return Math.max(min,Math.min(max,v)); }
+function isReached(id){ return state.reached.includes(id); }
+
+function goView(id){
+  state.view = id;
+  if(STEPS.some(s=>s.id===id) && !isReached(id)) state.reached.push(id);
+  render();
+  window.scrollTo({top:0,behavior:'instant'});
+}
+function loadSample(){
+  state = emptyState();
+  state.company = {...SAMPLE.company};
+  state.operations = {...SAMPLE.operations};
+  state.financial = {...SAMPLE.financial};
+  state.environmental = {...SAMPLE.environmental};
+  state.sustainability = {...SAMPLE.sustainability};
+  state.reached = STEPS.map(s=>s.id);
+  goView('profile');
+}
+function resetAll(){ state = emptyState(); goView('landing'); }
+
+function setField(group, key, val){ state[group][key] = val; }
+
+/* ============================================================
+   CALCULATIONS
+   ============================================================ */
+function computeKPIs(){
+  const c = state.company, o = state.operations, f = state.financial, e = state.environmental, s = state.sustainability;
+  const prodVol = num(c.prodVolume) || 1;
+
+  const costPerUnit = (num(f.rawMaterialCost)+num(f.energyCost)+num(f.laborCost)+num(f.logisticsCost)+num(f.wasteTreatmentCost)) / prodVol;
+
+  const gasKwh = num(e.naturalGas) * 10.55;
+  const energyIntensity = (num(e.electricity) + gasKwh) / prodVol;
+  let prevEnergyIntensity = null;
+  if(num(e.prevElectricity) && num(e.prevProdVolume)){
+    prevEnergyIntensity = num(e.prevElectricity) / num(e.prevProdVolume);
+  }
+  const energyTrendUp = prevEnergyIntensity !== null ? energyIntensity > prevEnergyIntensity : null;
+
+  const waterIntensity = num(e.water) / prodVol;
+  const carbonIntensity = (num(e.ghgEmissions) * 1000) / prodVol;
+
+  const wasteRate = num(e.materialConsumed) ? (num(e.wasteTotal) / num(e.materialConsumed) * 100) : 0;
+  const recoveryRate = num(e.wasteTotal) ? (num(e.wasteRecycled) / num(e.wasteTotal) * 100) : 0;
+  const recType = RECOVERY_BY_TYPE[e.wasteType] || RECOVERY_BY_TYPE.mixed;
+  const targetRecoverable = num(e.wasteTotal) * recType.rate;
+  const recoveryOpportunity = Math.max(0, targetRecoverable - num(e.wasteRecycled));
+
+  const downtime = num(o.downtime);
+  const defectRate = num(o.defectRate);
+  const onTime = num(o.onTimeDelivery);
+  const capUtil = num(o.capacityUtilization);
+
+  /* ---- category scores (0-100, higher = healthier) ---- */
+  const opScore = clamp(
+    ( clamp(100 - downtime*4,0,100) + clamp(100 - defectRate*10,0,100) + clamp(capUtil,0,100) + clamp(onTime,0,100) ) / 4,
+    0,100
+  );
+
+  const envEnergyScore = energyTrendUp === null ? 55 : (energyTrendUp ? 25 : 75);
+  const envWasteScore = clamp(100 - wasteRate*7,0,100);
+  const envScore = clamp((envEnergyScore + envWasteScore)/2, 0,100);
+
+  const sustScore = clamp(
+    (s.carbonFootprintAvailable==='yes'?28:0) +
+    (s.waterFootprintAvailable==='yes'?22:0) +
+    clamp(recoveryRate/70*30,0,30) +
+    clamp(20 - wasteRate*1.2,0,20)
+  ,0,100);
+
+  const dataScore = clamp(
+    (s.carbonFootprintAvailable==='yes'?25:0) +
+    (s.waterFootprintAvailable==='yes'?25:0) +
+    (s.kpisTracked==='yes'?25:0) +
+    (s.sustainabilityReport==='yes'?25:0)
+  ,0,100);
+
+  const freqScore = {continuous:30, monthly:18, quarterly:10, ad_hoc:0}[s.dataFrequency] ?? 0;
+  const reportScore = clamp(
+    (s.sustainabilityReport==='yes'?40:0) +
+    (s.kpisTracked==='yes'?30:0) +
+    freqScore
+  ,0,100);
+
+  const flags = {
+    downtime: downtime>=15?'red':downtime>=8?'orange':'green',
+    defect: defectRate>=7?'red':defectRate>=4?'orange':'green',
+    waste: wasteRate>=12?'red':wasteRate>=8?'orange':'green',
+    onTime: onTime<85?'red':onTime<95?'orange':'green',
+    capUtil: capUtil<70?'red':capUtil<85?'orange':'green',
+    energy: envEnergyScore<40?'red':envEnergyScore<65?'orange':'green',
+    dataMaturity: dataScore<40?'red':dataScore<70?'orange':'green',
+    reporting: reportScore<40?'red':reportScore<70?'orange':'green',
+  };
+
+  return {
+    prodVol, costPerUnit, energyIntensity, prevEnergyIntensity, energyTrendUp,
+    waterIntensity, carbonIntensity, wasteRate, recoveryRate, recType, recoveryOpportunity,
+    downtime, defectRate, onTime, capUtil,
+    opScore, envScore, sustScore, dataScore, reportScore, flags,
+    downtimeDelta: num(o.prevDowntime) ? downtime-num(o.prevDowntime) : null,
+    defectDelta: num(o.prevDefectRate) ? defectRate-num(o.prevDefectRate) : null,
+    wasteDelta: num(e.prevWasteRate) ? wasteRate-num(e.prevWasteRate) : null,
+  };
+}
+
+/* ============================================================
+   RENDER: ROOT
+   ============================================================ */
+function render(){
+  const app = document.getElementById('app');
+  document.getElementById('topbar-tag').textContent =
+    state.view==='landing' ? 'manufacturing performance & sustainability diagnostic' : (state.company.name || 'diagnostic in progress');
+
+  let html = '';
+  if(state.view==='landing') html = renderLanding();
+  else{
+    html += renderRail();
+    if(state.view==='profile') html = html + renderProfile();
+    else if(state.view==='operations') html = html + renderOperations();
+    else if(state.view==='financial') html = html + renderFinancial();
+    else if(state.view==='environmental') html = html + renderEnvironmental();
+    else if(state.view==='sustainability') html = html + renderSustainability();
+    else if(state.view==='diagnosis') html = html + renderDiagnosis();
+    else if(state.view==='insights') html = html + renderInsights();
+    else if(state.view==='investigation') html = html + renderInvestigation();
+    else if(state.view==='recommendations') html = html + renderRecommendations();
+    else if(state.view==='roadmap') html = html + renderRoadmap();
+    else if(state.view==='report') html = html + renderReport();
+  }
+  app.innerHTML = html;
+  bindInputs();
+}
+
+function renderRail(){
+  let inner = '';
+  STEPS.forEach((s,i)=>{
+    const st = state.view===s.id ? 'active' : isReached(s.id) ? 'done' : 'locked';
+    inner += `<div class="rail-step">
+      <div class="rail-dot ${st}" title="${s.label}" onclick="${isReached(s.id)?`goView('${s.id}')`:''}">${String(i+1).padStart(2,'0')}</div>
+      ${i<STEPS.length-1?`<div class="rail-line ${isReached(STEPS[i+1].id)?'done':''}"></div>`:''}
+    </div>`;
+  });
+  return `<div class="rail">${inner}</div>`;
+}
+
+/* ============================================================
+   LANDING
+   ============================================================ */
+function renderLanding(){
+  return `
+  <div class="hero">
+    <div class="eyebrow">PERFORM // diagnostic simulation</div>
+    <h1>Turn operational and environmental data into a prioritized management roadmap.</h1>
+    <p class="lede">A structured, evidence-based diagnostic for manufacturers preparing for international growth — built to mirror how an operational and sustainability consulting engagement actually runs: input, validate, diagnose, investigate, recommend, report.</p>
+    <div class="hero-actions">
+      <button class="btn btn-primary" onclick="goView('profile')">Start diagnostic →</button>
+      <button class="btn btn-sample" onclick="loadSample()">Load sample engagement</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="eyebrow" style="margin-bottom:14px;">Client challenge — illustrative</div>
+    <h2 style="font-size:19px;">Anatolia Home Manufacturing A.Ş.</h2>
+    <p style="color:var(--ink-dim);font-size:14px;margin-top:8px;max-width:720px;">A fictional Turkish home &amp; furniture manufacturer preparing for international expansion. Management has flagged rising production costs, increasing material waste, declining production reliability, incomplete environmental data, and growing customer requests for sustainability information. <span style="color:var(--ink);">Where should management intervene first?</span></p>
+  </div>
+
+  <div class="service-strip">
+    <div class="service-card">
+      <div class="n">01 — operational</div>
+      <h3>Reliability &amp; cost diagnostic</h3>
+      <p>Downtime, defect rate, capacity utilization and on-time delivery, benchmarked and traced back to root cause.</p>
+    </div>
+    <div class="service-card">
+      <div class="n">02 — sustainability</div>
+      <h3>Environmental performance</h3>
+      <p>Energy, water, waste and carbon intensity, with a material-recovery opportunity model by waste stream.</p>
+    </div>
+    <div class="service-card">
+      <div class="n">03 — data maturity</div>
+      <h3>Reporting readiness</h3>
+      <p>Whether the underlying data can actually support a sustainability disclosure or investor request today.</p>
+    </div>
+  </div>
+
+  <div class="foot-note">Fictional client and figures, built for portfolio and methodology-demonstration purposes only. Not affiliated with, and not based on confidential data from, any consulting firm.</div>
+  `;
+}
+
+/* ============================================================
+   STEP 1 — PROFILE
+   ============================================================ */
+function renderProfile(){
+  const c = state.company;
+  return sectionWrap('01','Company profile','Set up the client the way an engagement starts — organization, scale, and where it sells.', `
+    <div class="panel">
+      <div class="grid2">
+        ${textField('company','name','Company name', c.name, 'Anatolia Home Manufacturing A.Ş.')}
+        ${textField('company','industry','Industry', c.industry, 'Home & furniture manufacturing')}
+      </div>
+      <div class="grid3">
+        ${numField('company','revenue','Annual revenue (₺)', c.revenue, '620000000')}
+        ${numField('company','employees','Employees', c.employees, '340')}
+        ${numField('company','prodVolume','Annual production volume (units)', c.prodVolume, '100000')}
+      </div>
+      ${textField('company','exportMarkets','Main export markets', c.exportMarkets, 'Germany, France, United Kingdom')}
+    </div>
+  `, null, 'operations');
+}
+
+/* ============================================================
+   STEP 2 — OPERATIONS
+   ============================================================ */
+function renderOperations(){
+  const o = state.operations;
+  return sectionWrap('02','Operations','Reliability and delivery data. Prior-year figures are optional but sharpen the trend read.', `
+    <div class="panel">
+      <div class="grid2">
+        ${numField('operations','downtime','Machine downtime (% of scheduled time)', o.downtime, '18')}
+        ${numField('operations','prevDowntime','Downtime — prior year (%, optional)', o.prevDowntime, '13')}
+      </div>
+      <div class="grid2">
+        ${numField('operations','defectRate','Defect rate (%)', o.defectRate, '6.4')}
+        ${numField('operations','prevDefectRate','Defect rate — prior year (%, optional)', o.prevDefectRate, '3.1')}
+      </div>
+      <div class="grid3">
+        ${numField('operations','leadTime','Production lead time (days)', o.leadTime, '21')}
+        ${numField('operations','onTimeDelivery','On-time delivery (%)', o.onTimeDelivery, '78')}
+        ${numField('operations','capacityUtilization','Capacity utilization (%)', o.capacityUtilization, '71')}
+      </div>
+    </div>
+  `, 'profile', 'financial');
+}
+
+/* ============================================================
+   STEP 3 — FINANCIAL
+   ============================================================ */
+function renderFinancial(){
+  const f = state.financial;
+  return sectionWrap('03','Financial & cost','Annual cost base, used to derive cost per unit and weigh option feasibility later.', `
+    <div class="panel">
+      <div class="grid2">
+        ${numField('financial','rawMaterialCost','Raw material cost (₺/yr)', f.rawMaterialCost, '38000000')}
+        ${numField('financial','energyCost','Energy cost (₺/yr)', f.energyCost, '9200000')}
+      </div>
+      <div class="grid3">
+        ${numField('financial','laborCost','Labor cost (₺/yr)', f.laborCost, '21000000')}
+        ${numField('financial','logisticsCost','Logistics cost (₺/yr)', f.logisticsCost, '6500000')}
+        ${numField('financial','wasteTreatmentCost','Waste treatment cost (₺/yr)', f.wasteTreatmentCost, '1800000')}
+      </div>
+    </div>
+  `, 'operations', 'environmental');
+}
+
+/* ============================================================
+   STEP 4 — ENVIRONMENTAL
+   ============================================================ */
+function renderEnvironmental(){
+  const e = state.environmental;
+  const typeOptions = Object.entries(RECOVERY_BY_TYPE).map(([k,v])=>`<option value="${k}" ${e.wasteType===k?'selected':''}>${v.label}</option>`).join('');
+  return sectionWrap('04','Environmental', 'Resource use and waste, at annual level except the waste module (monthly, so recovery opportunity reads at an actionable scale).', `
+    <div class="panel">
+      <h3 style="font-size:14px;color:var(--ink-dim);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.04em;margin-bottom:16px;">Resource use</h3>
+      <div class="grid3">
+        ${numField('environmental','electricity','Electricity (kWh/yr)', e.electricity, '2400000')}
+        ${numField('environmental','naturalGas','Natural gas (m³/yr)', e.naturalGas, '180000')}
+        ${numField('environmental','water','Water (m³/yr)', e.water, '62000')}
+      </div>
+      <div class="grid2">
+        ${numField('environmental','prevElectricity','Electricity — prior year (kWh, optional)', e.prevElectricity, '2100000')}
+        ${numField('environmental','prevProdVolume','Production — prior year (units, optional)', e.prevProdVolume, '118000')}
+      </div>
+      ${numField('environmental','ghgEmissions','GHG emissions (tCO₂e/yr)', e.ghgEmissions, '1450')}
+    </div>
+    <div class="panel">
+      <h3 style="font-size:14px;color:var(--ink-dim);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.04em;margin-bottom:16px;">Waste module</h3>
+      <div class="grid3">
+        ${numField('environmental','wasteTotal','Total waste (kg/month)', e.wasteTotal, '9000')}
+        ${numField('environmental','wasteRecycled','Currently recycled / recovered (kg/month)', e.wasteRecycled, '3200')}
+        ${numField('environmental','materialConsumed','Total material consumed (kg/month)', e.materialConsumed, '100000')}
+      </div>
+      <div class="grid2">
+        <div class="field">
+          <label>Predominant waste stream</label>
+          <select data-group="environmental" data-key="wasteType">${typeOptions}</select>
+          <div class="hint">Sets the assumed recoverable fraction used in the opportunity model.</div>
+        </div>
+        ${numField('environmental','prevWasteRate','Waste rate — prior year (%, optional)', e.prevWasteRate, '4')}
+      </div>
+    </div>
+  `, 'financial', 'sustainability');
+}
+
+/* ============================================================
+   STEP 5 — SUSTAINABILITY MANAGEMENT
+   ============================================================ */
+function renderSustainability(){
+  const s = state.sustainability;
+  return sectionWrap('05','Sustainability management','Whether the company can currently back up a sustainability claim with data — this drives the data-maturity and reporting-readiness scores.', `
+    <div class="panel">
+      <div class="grid2">
+        ${yesNoField('sustainability','carbonFootprintAvailable','Carbon footprint available?', s.carbonFootprintAvailable)}
+        ${yesNoField('sustainability','waterFootprintAvailable','Water footprint available?', s.waterFootprintAvailable)}
+      </div>
+      <div class="grid2">
+        ${yesNoField('sustainability','kpisTracked','Environmental KPIs tracked?', s.kpisTracked)}
+        ${yesNoField('sustainability','sustainabilityReport','Sustainability report published?', s.sustainabilityReport)}
+      </div>
+      <div class="field">
+        <label>Data collection frequency</label>
+        <select data-group="sustainability" data-key="dataFrequency">
+          <option value="continuous" ${s.dataFrequency==='continuous'?'selected':''}>Continuous / automated</option>
+          <option value="monthly" ${s.dataFrequency==='monthly'?'selected':''}>Monthly</option>
+          <option value="quarterly" ${s.dataFrequency==='quarterly'?'selected':''}>Quarterly</option>
+          <option value="ad_hoc" ${s.dataFrequency==='ad_hoc'?'selected':''}>Ad hoc / manual, no fixed schedule</option>
+        </select>
+      </div>
+    </div>
+  `, 'environmental', 'diagnosis', 'Run diagnostic →');
+}
+
+/* ============================================================
+   FIELD BUILDERS
+   ============================================================ */
+function textField(group,key,label,val,placeholder){
+  return `<div class="field"><label>${label}</label><input type="text" data-group="${group}" data-key="${key}" value="${val}" placeholder="${placeholder||''}"></div>`;
+}
+function numField(group,key,label,val,placeholder){
+  return `<div class="field"><label>${label}</label><input type="number" step="any" data-group="${group}" data-key="${key}" value="${val}" placeholder="${placeholder||''}"></div>`;
+}
+function yesNoField(group,key,label,val){
+  return `<div class="field"><label>${label}</label>
+    <div class="radio-row">
+      <div class="radio-opt ${val==='yes'?'sel':''}" onclick="setField('${group}','${key}','yes');render();">Yes</div>
+      <div class="radio-opt ${val==='no'?'sel':''}" onclick="setField('${group}','${key}','no');render();">No</div>
+    </div>
+  </div>`;
+}
+
+function sectionWrap(num, title, desc, body, prevId, nextId, nextLabel){
+  return `
+  <div class="section-head">
+    <div class="step-tag mono">STEP ${num} / ${String(STEPS.length).padStart(2,'0')}</div>
+    <h2>${title}</h2>
+    <p>${desc}</p>
+  </div>
+  ${body}
+  <div class="actions">
+    ${prevId ? `<button class="btn btn-ghost" onclick="goView('${prevId}')">← Back</button>` : `<span></span>`}
+    ${nextId ? `<button class="btn btn-primary" onclick="goView('${nextId}')">${nextLabel||'Continue →'}</button>` : ''}
+  </div>
+  `;
+}
+
+function bindInputs(){
+  document.querySelectorAll('input[data-group]').forEach(el=>{
+    el.addEventListener('input', e=>{
+      setField(el.dataset.group, el.dataset.key, el.value);
+    });
+  });
+  document.querySelectorAll('select[data-group]').forEach(el=>{
+    el.addEventListener('change', e=>{
+      setField(el.dataset.group, el.dataset.key, el.value);
+      render();
+    });
+  });
+}
+
+/* ============================================================
+   STEP 6 — DIAGNOSIS
+   ============================================================ */
+function renderDiagnosis(){
+  const k = computeKPIs();
+  const dims = [
+    {name:'Operational efficiency', score:k.opScore},
+    {name:'Environmental performance', score:k.envScore},
+    {name:'Sustainability management', score:k.sustScore},
+    {name:'Data maturity', score:k.dataScore},
+    {name:'Reporting readiness', score:k.reportScore},
+  ];
+  const gauges = dims.map(d=>{
+    const st = statusOf(d.score);
+    return `<div class="gauge-card">
+      ${gaugeSvg(d.score, st.color)}
+      <div class="gauge-name">${d.name}</div>
+      <div class="gauge-score mono">${Math.round(d.score)}</div>
+      <div class="gauge-status chip-${st.color}" style="display:inline-block;">${st.label}</div>
+    </div>`;
+  }).join('');
+
+  return sectionWrap('06','Diagnostic overview','Five dimensions, scored from the data entered — this is a read of current state, not a recommendation yet.', `
+    <div class="panel">
+      <div class="gauge-row">${gauges}</div>
+    </div>
+
+    <div class="panel">
+      <div class="eyebrow" style="margin-bottom:16px;">Derived metrics</div>
+      <table class="dt">
+        <tr><th>Metric</th><th>Value</th><th>Reference</th></tr>
+        <tr><td>Cost per unit</td><td>${fmtCur(k.costPerUnit)}</td><td>Informational — no external benchmark applied</td></tr>
+        <tr><td>Energy intensity</td><td>${fmt(k.energyIntensity)} kWh/unit</td><td>${k.prevEnergyIntensity!==null ? `Prior year: ${fmt(k.prevEnergyIntensity)} kWh/unit (${k.energyTrendUp?'▲ worsening':'▼ improving'})` : 'No prior-year figure supplied'}</td></tr>
+        <tr><td>Water intensity</td><td>${fmt(k.waterIntensity,2)} m³/unit</td><td>Informational</td></tr>
+        <tr><td>Carbon intensity</td><td>${fmt(k.carbonIntensity)} kg CO₂e/unit</td><td>Informational</td></tr>
+        <tr><td>Waste rate</td><td>${fmt(k.wasteRate)}%</td><td>${k.wasteDelta!==null ? `Prior year: ${fmt(num(state.environmental.prevWasteRate))}% (${k.wasteDelta>0?'▲':'▼'} ${fmt(Math.abs(k.wasteDelta))} pts)` : 'Reference band: <5% target, 5–8% moderate, >8% critical'}</td></tr>
+        <tr><td>Downtime</td><td>${fmt(k.downtime)}%</td><td>${k.downtimeDelta!==null ? `Prior year: ${fmt(num(state.operations.prevDowntime))}% (${k.downtimeDelta>0?'▲':'▼'} ${fmt(Math.abs(k.downtimeDelta))} pts)` : 'Reference band: <8% target, 8–15% moderate, >15% critical'}</td></tr>
+        <tr><td>Defect rate</td><td>${fmt(k.defectRate)}%</td><td>${k.defectDelta!==null ? `Prior year: ${fmt(num(state.operations.prevDefectRate))}% (${k.defectDelta>0?'▲':'▼'} ${fmt(Math.abs(k.defectDelta))} pts)` : 'Reference band: <2% target, 2–4% moderate, >4% critical'}</td></tr>
+      </table>
+    </div>
+  `, 'sustainability', 'insights', 'See key findings →');
+}
+
+function gaugeSvg(score, color){
+  const colorVar = {red:'var(--red)',orange:'var(--amber)',green:'var(--green)'}[color];
+  const pct = clamp(score,0,100)/100;
+  const r = 34, cx=42, cy=42;
+  const circumference = Math.PI * r;
+  const dash = circumference * pct;
+  return `<svg width="84" height="50" viewBox="0 0 84 50">
+    <path d="M 8 42 A ${r} ${r} 0 0 1 76 42" fill="none" stroke="var(--line)" stroke-width="7" stroke-linecap="round"/>
+    <path d="M 8 42 A ${r} ${r} 0 0 1 76 42" fill="none" stroke="${colorVar}" stroke-width="7" stroke-linecap="round"
+      stroke-dasharray="${dash} ${circumference}"/>
+  </svg>`;
+}
+
+/* ============================================================
+   STEP 7 — INSIGHTS / FINDINGS
+   ============================================================ */
+function buildFindings(k){
+  const findings = [];
+  if(k.flags.waste!=='green'){
+    findings.push({
+      sev:k.flags.waste, title:'Material efficiency',
+      body:`Waste rate is ${fmt(k.wasteRate)}% of material consumed${k.wasteDelta!==null?`, up from ${fmt(num(state.environmental.prevWasteRate))}%`:''}.`,
+      evidence:[`Total waste: ${fmt(num(state.environmental.wasteTotal))} kg/month`, `Recovery rate: ${fmt(k.recoveryRate)}% of a ${Math.round(k.recType.rate*100)}% recoverable fraction (${k.recType.label.toLowerCase()})`, `Estimated unrecovered opportunity: ${fmt(k.recoveryOpportunity)} kg/month`],
+    });
+  }
+  if(k.flags.downtime!=='green' || k.flags.defect!=='green'){
+    findings.push({
+      sev: (k.flags.downtime==='red'||k.flags.defect==='red') ? 'red' : 'orange',
+      title:'Equipment reliability',
+      body:`Downtime is ${fmt(k.downtime)}% of scheduled time${k.downtimeDelta!==null?` (${k.downtimeDelta>0?'up':'down'} ${fmt(Math.abs(k.downtimeDelta))} pts on prior year)`:''}, alongside a ${fmt(k.defectRate)}% defect rate.`,
+      evidence:[`Capacity utilization: ${fmt(k.capUtil)}%`, `On-time delivery: ${fmt(k.onTime)}%`, `Cost per unit: ${fmtCur(k.costPerUnit)}`],
+    });
+  }
+  if(k.flags.energy!=='green' && k.prevEnergyIntensity!==null){
+    findings.push({
+      sev:k.flags.energy, title:'Energy intensity',
+      body:`Energy use per unit produced is ${fmt(k.energyIntensity)} kWh/unit, up from ${fmt(k.prevEnergyIntensity)} kWh/unit.`,
+      evidence:[`Production volume: ${fmt(k.prodVol)} units (prior year: ${fmt(num(state.environmental.prevProdVolume))})`, `Electricity use held roughly flat while output changed`],
+    });
+  }
+  if(k.flags.dataMaturity!=='green' || k.flags.reporting!=='green'){
+    const missing = [];
+    if(state.sustainability.carbonFootprintAvailable==='no') missing.push('carbon footprint');
+    if(state.sustainability.waterFootprintAvailable==='no') missing.push('water footprint');
+    if(state.sustainability.kpisTracked==='no') missing.push('tracked environmental KPIs');
+    if(state.sustainability.sustainabilityReport==='no') missing.push('a published sustainability report');
+    findings.push({
+      sev:k.flags.dataMaturity==='red'?'red':'orange', title:'Sustainability data maturity',
+      body:`The company cannot currently evidence a sustainability position to customers or partners.`,
+      evidence:[`Missing: ${missing.join(', ')||'none — data maturity is adequate'}`, `Data collection frequency: ${({continuous:'continuous / automated',monthly:'monthly',quarterly:'quarterly',ad_hoc:'ad hoc, no fixed schedule'})[state.sustainability.dataFrequency]}`],
+    });
+  }
+  const order = {red:0, orange:1, green:2};
+  findings.sort((a,b)=>order[a.sev]-order[b.sev]);
+  return findings;
+}
+
+function renderInsights(){
+  const k = computeKPIs();
+  const findings = buildFindings(k);
+  const list = findings.length ? findings.map((f,i)=>`
+    <div class="finding">
+      <div class="finding-badge chip-${f.sev}" style="background:${f.sev==='red'?'rgba(192,72,63,.1)':f.sev==='orange'?'rgba(201,131,47,.1)':'rgba(63,143,99,.1)'};color:var(--${f.sev==='red'?'red':f.sev==='orange'?'amber':'green'});">${String(i+1).padStart(2,'0')}</div>
+      <div class="finding-body">
+        <h4>${f.title}</h4>
+        <div>${f.body}</div>
+        <ul class="finding-evidence">${f.evidence.map(e=>`<li>${e}</li>`).join('')}</ul>
+      </div>
+    </div>
+  `).join('') : `<div class="panel">No dimension is currently flagged — inputs sit within the reference bands used for this diagnostic.</div>`;
+
+  return sectionWrap('07','Key findings','Ranked by severity. These are observations, not conclusions — the next step is to test why each one is happening.', list, 'diagnosis', 'investigation', 'Investigate causes →');
+}
+
+/* ============================================================
+   STEP 8 — INVESTIGATION / HYPOTHESIS ENGINE
+   ============================================================ */
+function renderInvestigation(){
+  const k = computeKPIs();
+  let blocks = '';
+
+  if(k.flags.downtime!=='green' || k.flags.defect!=='green'){
+    blocks += `
+    <div class="panel">
+      <div class="eyebrow" style="margin-bottom:10px;">Hypothesis — equipment reliability</div>
+      <div class="chain">
+        <div class="chain-node">Machine downtime ↑ (${fmt(k.downtime)}%)</div>
+        <div class="chain-arrow">↓</div>
+        <div class="chain-node">Defect rate ↑ (${fmt(k.defectRate)}%)</div>
+        <div class="chain-arrow">↓</div>
+        <div class="chain-node">Usable output ↓</div>
+        <div class="chain-arrow">↓</div>
+        <div class="chain-node">Cost per unit ↑ (${fmtCur(k.costPerUnit)})</div>
+      </div>
+      <p style="color:var(--ink-dim);font-size:13.5px;">The current dataset cannot determine whether this is driven by machine condition, maintenance practice, or operator/shift factors. Recommended before any capital decision:</p>
+      <div class="grid2">
+        <div>
+          <div class="mono" style="font-size:11px;color:var(--ink-dim);text-transform:uppercase;margin-bottom:6px;">Data to request</div>
+          <ul style="font-size:13.5px;margin:0;padding-left:18px;"><li>Downtime logs by machine</li><li>Maintenance history</li><li>Defect records by line</li><li>Machine age and duty cycle</li><li>Operator / shift data</li></ul>
+        </div>
+        <div>
+          <div class="mono" style="font-size:11px;color:var(--ink-dim);text-transform:uppercase;margin-bottom:6px;">Who to interview</div>
+          <ul style="font-size:13.5px;margin:0;padding-left:18px;"><li>Production manager</li><li>Maintenance manager</li><li>Quality manager</li></ul>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  if(k.flags.waste!=='green'){
+    blocks += `
+    <div class="panel">
+      <div class="eyebrow" style="margin-bottom:10px;">Hypothesis — material efficiency</div>
+      <p style="color:var(--ink-dim);font-size:13.5px;margin-bottom:14px;">Waste rose to ${fmt(k.wasteRate)}%. Three competing explanations, none confirmable from the current dataset alone:</p>
+      <table class="dt">
+        <tr><th>Hypothesis</th><th>Evidence needed to confirm or rule out</th></tr>
+        <tr><td>H1 — Process inefficiency</td><td>Waste by production line, waste by product, defect rate by machine</td></tr>
+        <tr><td>H2 — Product mix change</td><td>Product mix history, material requirements per SKU, production complexity</td></tr>
+        <tr><td>H3 — Procurement / material quality</td><td>Supplier history, material specifications, rejected-material log</td></tr>
+      </table>
+    </div>`;
+  }
+
+  if(k.flags.energy!=='green' && k.prevEnergyIntensity!==null){
+    blocks += `
+    <div class="panel">
+      <div class="eyebrow" style="margin-bottom:10px;">Hypothesis — energy intensity</div>
+      <p style="color:var(--ink-dim);font-size:13.5px;">Energy per unit rose to ${fmt(k.energyIntensity)} kWh/unit while output changed. Possible drivers: equipment inefficiency, lower capacity utilization spreading fixed energy load over fewer units, idle/standby consumption, or a process change. Distinguishing between these requires line-level meter data, which was not part of this diagnostic's inputs.</p>
+    </div>`;
+  }
+
+  if(k.flags.dataMaturity!=='green'){
+    blocks += `
+    <div class="panel">
+      <div class="eyebrow" style="margin-bottom:10px;">Hypothesis — sustainability data gap</div>
+      <p style="color:var(--ink-dim);font-size:13.5px;">The absence of tracked footprints and reporting is itself the finding, not something to root-cause further — it points directly to an action: establish the baseline before setting reduction targets.</p>
+    </div>`;
+  }
+
+  if(!blocks){
+    blocks = `<div class="panel">No dimension requires further investigation — proceed directly to the recommendation.</div>`;
+  }
+
+  return sectionWrap('08','Investigation', 'The system flags what it cannot yet explain, and what data or conversations would close the gap — deliberately, before jumping to a fix.', blocks, 'insights', 'recommendations', 'See strategic options →');
+}
+
+/* ============================================================
+   STEP 9 — RECOMMENDATIONS
+   ============================================================ */
+function optionRow(cost,impact,speed,risk){
+  const dot = c => `<span class="chip chip-${c}"><span class="chip-dot"></span></span>`;
+  return `<td>${dot(cost)}</td><td>${dot(impact)}</td><td>${dot(speed)}</td><td>${dot(risk)}</td>`;
+}
+
+function renderRecommendations(){
+  const k = computeKPIs();
+  let sections = '';
+
+  if(k.flags.downtime!=='green' || k.flags.defect!=='green'){
+    sections += `
+    <div class="panel">
+      <div class="eyebrow" style="margin-bottom:14px;">Equipment reliability — option set</div>
+      <table class="dt">
+        <tr><th>Option</th><th>Cost</th><th>Impact</th><th>Speed</th><th>Risk</th></tr>
+        <tr><td>A — Preventive maintenance + monitoring</td>${optionRow('green','orange','green','green')}</tr>
+        <tr><td>B — Machine refurbishment</td>${optionRow('orange','green','orange','orange')}</tr>
+        <tr><td>C — Machine replacement</td>${optionRow('red','green','red','red')}</tr>
+      </table>
+      <p style="color:var(--ink-dim);font-size:13.5px;margin-top:14px;"><strong style="color:var(--ink);">Recommended immediate action:</strong> preventive maintenance plus diagnostic monitoring. Capital replacement should only be evaluated after remaining machine life is confirmed and lifecycle economics of refurbishment vs. replacement are compared.</p>
+    </div>`;
+  }
+
+  if(k.flags.waste!=='green'){
+    sections += `
+    <div class="panel">
+      <div class="eyebrow" style="margin-bottom:14px;">Material efficiency — option set</div>
+      <table class="dt">
+        <tr><th>Option</th><th>Cost</th><th>Impact</th><th>Speed</th><th>Risk</th></tr>
+        <tr><td>A — Waste segregation &amp; recovery program</td>${optionRow('green','orange','green','green')}</tr>
+        <tr><td>B — Process yield improvement</td>${optionRow('orange','green','orange','orange')}</tr>
+        <tr><td>C — Material substitution / supplier change</td>${optionRow('orange','orange','red','orange')}</tr>
+      </table>
+      <p style="color:var(--ink-dim);font-size:13.5px;margin-top:14px;"><strong style="color:var(--ink);">Recommended immediate action:</strong> a segregation and recovery program targeting the ${fmt(k.recoveryOpportunity)} kg/month recovery gap in ${k.recType.label.toLowerCase()} waste — low cost, fast, and reversible while H1–H3 are investigated.</p>
+    </div>`;
+  }
+
+  if(k.flags.energy!=='green' && k.prevEnergyIntensity!==null){
+    sections += `
+    <div class="panel">
+      <div class="eyebrow" style="margin-bottom:14px;">Energy intensity — option set</div>
+      <table class="dt">
+        <tr><th>Option</th><th>Cost</th><th>Impact</th><th>Speed</th><th>Risk</th></tr>
+        <tr><td>A — Sub-metering &amp; monitoring</td>${optionRow('green','orange','green','green')}</tr>
+        <tr><td>B — Efficiency retrofit (motors, lighting, HVAC)</td>${optionRow('orange','green','orange','orange')}</tr>
+        <tr><td>C — On-site generation / renewable supply</td>${optionRow('red','green','red','orange')}</tr>
+      </table>
+      <p style="color:var(--ink-dim);font-size:13.5px;margin-top:14px;"><strong style="color:var(--ink);">Recommended immediate action:</strong> sub-metering to separate the effect of lower capacity utilization from genuine equipment inefficiency before committing capital.</p>
+    </div>`;
+  }
+
+  if(k.flags.dataMaturity!=='green' || k.flags.reporting!=='green'){
+    sections += `
+    <div class="panel">
+      <div class="eyebrow" style="margin-bottom:14px;">Sustainability data — option set</div>
+      <table class="dt">
+        <tr><th>Option</th><th>Cost</th><th>Impact</th><th>Speed</th><th>Risk</th></tr>
+        <tr><td>A — Establish environmental KPI baseline</td>${optionRow('green','green','green','green')}</tr>
+        <tr><td>B — Carbon &amp; water footprint calculation</td>${optionRow('orange','green','orange','green')}</tr>
+        <tr><td>C — Full sustainability report &amp; disclosure</td>${optionRow('orange','orange','red','orange')}</tr>
+      </table>
+      <p style="color:var(--ink-dim);font-size:13.5px;margin-top:14px;"><strong style="color:var(--ink);">Recommended immediate action:</strong> a baseline KPI system, since footprint calculation and disclosure are only credible once the underlying data is trustworthy.</p>
+    </div>`;
+  }
+
+  if(!sections) sections = `<div class="panel">No option set is required — current performance sits within target bands.</div>`;
+
+  return sectionWrap('09','Strategic options', 'One option set per flagged area, evaluated on cost, impact, speed of implementation, and risk.', sections, 'investigation', 'roadmap', 'Build the roadmap →');
+}
+
+/* ============================================================
+   STEP 10 — ROADMAP
+   ============================================================ */
+function renderRoadmap(){
+  const k = computeKPIs();
+  const now=[], mid=[], later=[];
+  now.push('Validate production and waste data at source');
+  if(k.flags.downtime!=='green'||k.flags.defect!=='green') now.push('Conduct machine-level downtime and defect analysis');
+  if(k.flags.dataMaturity!=='green'||k.flags.reporting!=='green') now.push('Establish an environmental KPI baseline');
+  if(k.flags.waste!=='green') now.push('Launch waste segregation & recovery tracking');
+
+  if(k.flags.downtime!=='green'||k.flags.defect!=='green') mid.push('Implement preventive maintenance program');
+  if(k.flags.waste!=='green') mid.push('Evaluate process-level material recovery');
+  if(state.sustainability.carbonFootprintAvailable==='no') mid.push('Calculate carbon footprint');
+  if(state.sustainability.waterFootprintAvailable==='no') mid.push('Calculate water footprint');
+  if(k.flags.energy!=='green') mid.push('Sub-meter major energy loads');
+
+  later.push('Develop a sustainability strategy and decarbonization roadmap');
+  later.push('Integrate KPI, maintenance and environmental reporting into one system');
+  if(state.sustainability.sustainabilityReport==='no') later.push('Publish first sustainability report');
+  later.push('Reassess machine refurbishment vs. replacement using confirmed lifecycle data');
+
+  return sectionWrap('10','Improvement roadmap', 'Sequenced so that data validation and quick wins come first, and capital decisions come after the evidence exists to justify them.', `
+    <div class="roadmap">
+      <div class="roadmap-col"><h4>0 – 3 months</h4><ul>${now.map(x=>`<li>${x}</li>`).join('')}</ul></div>
+      <div class="roadmap-col"><h4>3 – 6 months</h4><ul>${mid.map(x=>`<li>${x}</li>`).join('')}</ul></div>
+      <div class="roadmap-col"><h4>6 – 12 months</h4><ul>${later.map(x=>`<li>${x}</li>`).join('')}</ul></div>
+    </div>
+  `, 'recommendations', 'report', 'Generate management report →');
+}
+
+/* ============================================================
+   STEP 11 — REPORT
+   ============================================================ */
+function renderReport(){
+  const k = computeKPIs();
+  const findings = buildFindings(k);
+  const c = state.company;
+
+  const findingsHtml = findings.map((f,i)=>`
+    <div style="margin-bottom:16px;">
+      <div style="font-family:var(--font-mono);font-size:12px;color:var(--${f.sev==='red'?'red':f.sev==='orange'?'amber':'green'});text-transform:uppercase;">Finding ${i+1} — ${f.sev==='red'?'critical':f.sev==='orange'?'needs attention':'monitor'}</div>
+      <h4 style="margin-top:4px;">${f.title}</h4>
+      <div style="font-size:13.5px;color:var(--ink-dim);">${f.body}</div>
+      <ul class="finding-evidence">${f.evidence.map(e=>`<li>${e}</li>`).join('')}</ul>
+    </div>
+  `).join('');
+
+  return sectionWrap('11','Executive report', 'Compiled from the diagnostic, findings, investigation and roadmap above.', `
+    <div class="panel" id="report-content">
+      <div style="border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:20px;">
+        <div class="eyebrow">Management diagnostic report</div>
+        <h2 style="font-size:22px;margin-top:8px;">${c.name || 'Client company'}</h2>
+        <div style="color:var(--ink-dim);font-size:13px;margin-top:4px;">${c.industry || '—'} · ${c.employees||'—'} employees · ${fmt(num(c.prodVolume))} units/yr · Export markets: ${c.exportMarkets||'—'}</div>
+      </div>
+
+      <h3 style="font-size:14px;text-transform:uppercase;letter-spacing:.04em;font-family:var(--font-mono);color:var(--ink-dim);margin-bottom:10px;">Executive summary</h3>
+      <p style="font-size:14px;color:var(--ink);max-width:760px;">The diagnostic identified ${findings.length} priority area${findings.length===1?'':'s'}${findings.length?': '+findings.map(f=>f.title.toLowerCase()).join(', ')+'.':'.'} Operational efficiency scored ${Math.round(k.opScore)}/100, environmental performance ${Math.round(k.envScore)}/100, and data maturity ${Math.round(k.dataScore)}/100. None of the flagged issues can be root-caused from the current dataset alone — the recommended first step in every case is targeted data collection, not immediate capital spend.</p>
+
+      <h3 style="font-size:14px;text-transform:uppercase;letter-spacing:.04em;font-family:var(--font-mono);color:var(--ink-dim);margin:24px 0 10px;">Key findings</h3>
+      ${findingsHtml || '<p style="font-size:13.5px;color:var(--ink-dim);">No dimension is currently flagged.</p>'}
+
+      <h3 style="font-size:14px;text-transform:uppercase;letter-spacing:.04em;font-family:var(--font-mono);color:var(--ink-dim);margin:24px 0 10px;">Recommended roadmap</h3>
+      <div id="report-roadmap"></div>
+
+      <div class="foot-note">Prepared as a diagnostic-methodology demonstration. Client, figures and benchmarks are fictional or illustrative; this is not a real client engagement or a real consulting deliverable.</div>
+    </div>
+    <div class="actions no-print">
+      <button class="btn btn-ghost" onclick="goView('roadmap')">← Back</button>
+      <div style="display:flex;gap:10px;">
+        <button class="btn" onclick="window.print()">Print / save as PDF</button>
+        <button class="btn btn-sample" onclick="resetAll()">Start a new engagement</button>
+      </div>
+    </div>
+  `, null, null);
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+render();
+setTimeout(()=>{
+  if(state.view==='report'){
+    const rm = document.getElementById('report-roadmap');
+    if(rm) rm.innerHTML = renderRoadmapSummaryOnly();
+  }
+},0);
+
+function renderRoadmapSummaryOnly(){
+  const k = computeKPIs();
+  const now=[], mid=[], later=[];
+  now.push('Validate production and waste data at source');
+  if(k.flags.downtime!=='green'||k.flags.defect!=='green') now.push('Conduct machine-level downtime and defect analysis');
+  if(k.flags.dataMaturity!=='green'||k.flags.reporting!=='green') now.push('Establish an environmental KPI baseline');
+  if(k.flags.waste!=='green') now.push('Launch waste segregation & recovery tracking');
+  if(k.flags.downtime!=='green'||k.flags.defect!=='green') mid.push('Implement preventive maintenance program');
+  if(k.flags.waste!=='green') mid.push('Evaluate process-level material recovery');
+  if(state.sustainability.carbonFootprintAvailable==='no') mid.push('Calculate carbon footprint');
+  if(state.sustainability.waterFootprintAvailable==='no') mid.push('Calculate water footprint');
+  later.push('Develop a sustainability strategy and decarbonization roadmap');
+  later.push('Integrate KPI, maintenance and environmental reporting into one system');
+  return `<table class="dt"><tr><th>0–3 months</th><th>3–6 months</th><th>6–12 months</th></tr>
+    <tr><td>${now.join('<br>')}</td><td>${mid.join('<br>')||'—'}</td><td>${later.join('<br>')}</td></tr></table>`;
+}
+</script>
+</body>
+</html>
